@@ -1,57 +1,91 @@
 import re
-from typing import List, Tuple
-
+from typing import List
 
 class RegexModel:
-    """Modelo para el manejo de expresiones regulares."""
+    """Modelo para manejar la lógica de las expresiones regulares."""
 
     def __init__(self):
-        self.current_regex: str = ""
-        self.compiled_pattern = None
+        self.patterns = []
 
-    def set_regex(self, regex: str) -> bool:
+    def set_regex(self, pattern: str) -> bool:
         """
-        Establece y compila una nueva expresión regular.
+        Establece un nuevo patrón de expresión regular.
 
         Args:
-            regex (str): La expresión regular a compilar
+            pattern (str): El patrón de expresión regular
 
         Returns:
-            bool: True si la compilación fue exitosa, False en caso contrario
+            bool: True si el patrón es válido, False en caso contrario
         """
         try:
-            self.compiled_pattern = re.compile(regex)
-            self.current_regex = regex
+            re.compile(pattern)
+            self.patterns.append(pattern)
             return True
         except re.error:
-            self.compiled_pattern = None
             return False
 
-    def validate_strings(self, strings: List[str]) -> List[Tuple[str, bool]]:
+    def validate_strings(self, strings: List[str]) -> List[tuple]:
         """
-        Valida una lista de cadenas contra la expresión regular actual.
+        Valida una lista de cadenas contra el patrón actual.
 
         Args:
             strings (List[str]): Lista de cadenas a validar
 
         Returns:
-            List[Tuple[str, bool]]: Lista de tuplas (cadena, es_válida)
+            List[tuple]: Lista de resultados (cadena, es_válida)
         """
-        if not self.compiled_pattern:
+        if not self.patterns:
             return [(s, False) for s in strings]
 
-        return [(s, bool(self.compiled_pattern.fullmatch(s))) for s in strings]
+        results = []
+        for pattern in self.patterns:
+            regex = re.compile(pattern)
+            results.extend([(s, bool(regex.match(s))) for s in strings])
+        return results
 
     def explain_regex(self) -> str:
         """
-        Genera una explicación en lenguaje natural de la expresión regular.
+        Explica las expresiones regulares actuales en lenguaje natural.
 
         Returns:
-            str: Explicación de la expresión regular
+            str: Explicación en lenguaje natural
         """
-        if not self.current_regex:
-            return "No hay expresión regular definida."
+        if not self.patterns:
+            return "No hay patrones de expresión regular establecidos."
 
-        # Aquí se implementará la lógica para explicar la regex
-        # Por ahora retornamos un placeholder
-        return f"Expresión regular: {self.current_regex}"
+        explanations = {
+            '.': 'cualquier carácter excepto una nueva línea',
+            '*': 'cero o más repeticiones del carácter anterior',
+            '+': 'una o más repeticiones del carácter anterior',
+            '?': 'cero o una repetición del carácter anterior',
+            '^': 'inicio de la cadena',
+            '$': 'fin de la cadena',
+            '\\d': 'cualquier dígito',
+            '\\D': 'cualquier carácter que no sea un dígito',
+            '\\w': 'cualquier carácter de palabra (letra, dígito o guion bajo)',
+            '\\W': 'cualquier carácter que no sea de palabra',
+            '\\s': 'cualquier espacio en blanco',
+            '\\S': 'cualquier carácter que no sea un espacio en blanco',
+            '[abc]': 'cualquier carácter a, b o c',
+            '[^abc]': 'cualquier carácter excepto a, b o c',
+            '(...)': 'grupo de captura',
+            '(?:...)': 'grupo sin captura',
+            '\\b': 'límite de palabra',
+            '\\B': 'no límite de palabra'
+        }
+
+        explanation = []
+        for pattern in self.patterns:
+            explanation.append(f"Patrón: {pattern}")
+            for char in pattern:
+                if char in explanations:
+                    explanation.append(explanations[char])
+                else:
+                    explanation.append(f"'{char}'")
+            explanation.append("\n")
+
+        return ' '.join(explanation)
+
+    def clear_patterns(self):
+        """Limpia todos los patrones de expresión regular almacenados."""
+        self.patterns = []

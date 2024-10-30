@@ -1,7 +1,6 @@
 from typing import List
 from src.models.regex_model import RegexModel
 
-
 class RegexController:
     """Controlador principal para la aplicación de validación de regex."""
 
@@ -36,9 +35,13 @@ class RegexController:
 
     def get_regex_explanation(self) -> str:
         """
-        Obtiene la explicación de la expresión regular actual.
+        Obtiene la explicación de las expresiones regulares actuales.
 
         Returns:
             str: Explicación en lenguaje natural
         """
         return self.model.explain_regex()
+
+    def clear_patterns(self):
+        """Limpia todos los patrones de expresión regular almacenados."""
+        self.model.clear_patterns()
